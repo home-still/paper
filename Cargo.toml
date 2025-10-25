@@ -1,0 +1,3 @@
+[workspace]
+members = ["paper-fetch-core", "api"]
+resolver = "2"
