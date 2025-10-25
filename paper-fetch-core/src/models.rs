@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
+use std::path::PathBuf;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Author {
@@ -45,11 +45,18 @@ pub struct SearchResult {
     pub provider: String,
 }
 
-#[derive(Error, Debug)]
-pub enum PaperFetchError {
-    #[error("Invalid input: {0}")]
-    InvalidInput(String),
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DownloadResult {
+    pub file_path: PathBuf,
+    pub doi: Option<String>,
+    pub sha256: String,
+    pub size_bytes: u64,
+}
 
-    #[error("HTTP error: {0}")]
-    Http(#[from] reqwest::Error),
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PaperMetadata {
+    pub title: Option<String>,
+    pub authors: Vec<Author>,
+    pub doi: Option<String>,
+    pub confidence_score: f32,
 }
