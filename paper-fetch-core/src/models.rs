@@ -1,10 +1,11 @@
-use serde::{Deserialize, Serialize};
 use chrono::NaiveDate;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Author {
     pub name: String,
-    pub affiliation: Option<String>
+    pub affiliation: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -16,7 +17,7 @@ pub struct Paper {
     pub publication_date: Option<NaiveDate>,
     pub doi: Option<String>,
     pub download_url: Option<String>,
-    pub source: String
+    pub source: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -25,7 +26,7 @@ pub enum SearchType {
     Title,
     Author,
     DOI,
-    Subject
+    Subject,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -33,14 +34,22 @@ pub struct SearchQuery {
     pub query: String,
     pub search_type: SearchType,
     pub max_results: usize,
-    pub offset: usize
+    pub offset: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SearchResult{
+pub struct SearchResult {
     pub papers: Vec<Paper>,
     pub total_results: usize,
     pub next_offset: Option<usize>,
-    pub provider: String
+    pub provider: String,
 }
 
+#[derive(Error, Debug)]
+pub enum PaperFetchError {
+    #[error("Invalid input: {0}")]
+    InvalidInput(String),
+
+    #[error("HTTP error: {0}")]
+    Http(#[from] reqwest::Error),
+}
