@@ -1,3 +1,4 @@
+use super::config::ResilienceConfig;
 use governor::{DefaultDirectRateLimiter, Quota, RateLimiter};
 use std::collections::HashMap;
 use std::num::NonZeroU32;
@@ -10,8 +11,8 @@ pub struct ProviderRateLimiter {
 }
 
 impl ProviderRateLimiter {
-    pub fn new(requests_per_second: u32) -> Result<Self, crate::error::PaperFetchError> {
-        let quota = NonZeroU32::new(requests_per_second)
+    pub fn new(config: &ResilienceConfig) -> Result<Self, crate::error::PaperFetchError> {
+        let quota = NonZeroU32::new(config.rate_limit_rps)
             .ok_or_else(|| {
                 crate::error::PaperFetchError::InvalidInput(String::from(
                     "requests_per_second must be greater than 0",
