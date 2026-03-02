@@ -408,3 +408,66 @@ cargo check
 ⏭️ Next: Extract magic numbers to config
 
 **Total Session Time:** ~1.5 hours (including crate research and troubleshooting)
+
+---
+
+## ADDENDUM: Configuration Refactoring
+
+**Completed:** Extracted all magic numbers to `ResilienceConfig`
+
+### Changes Made
+
+**Created:** `resilience/config.rs`
+```rust
+pub struct ResilienceConfig {
+    pub rate_limit_rps: u32,
+    pub cb_initial_backoff: Duration,
+    pub cb_max_backoff: Duration,
+    pub cb_failure_threshold: u32,
+    pub retry_max_attempts: usize,
+    pub retry_min_backoff: Duration,
+    pub retry_max_backoff: Duration,
+}
+```
+
+**Updated:**
+- `circuit_breaker.rs` - Now takes `&ResilienceConfig` parameter
+- `retry.rs` - Configures `ExponentialBuilder` from config values
+- `rate_limiter.rs` - Uses `config.rate_limit_rps` instead of raw parameter
+
+### Default Values
+
+All defaults documented in `impl Default for ResilienceConfig`:
+- Rate limit: 1 req/s (conservative)
+- Circuit breaker: 10s initial → 60s max backoff, 3 failures to open
+- Retry: 5 attempts max, 100ms min → 30s max backoff with jitter
+
+### Benefits
+
+✅ Single source of truth for all resilience parameters
+✅ Easy to customize per-environment (dev/staging/prod)
+✅ Future: Can load from TOML/env vars
+✅ Testable with custom configs
+✅ Self-documenting via field names and comments
+
+**Status:** All magic numbers eliminated ✅
+
+### Application-Level Config
+
+**Created:** `src/config.rs`
+```rust
+pub struct Config {
+    pub resilience: ResilienceConfig,
+    pub download_path: PathBuf,
+    pub cache_path: PathBuf,
+}
+```
+
+**Features:**
+- Builder pattern methods: `.with_download_path()`, `.with_cache_path()`
+- Nests `ResilienceConfig` for organized settings
+- Default paths: `./downloads` and `./cache`
+
+**Why:** Prevents hardcoded paths in download service and future components.
+
+**Status:** All configuration centralized ✅
