@@ -12,7 +12,7 @@ pub struct ArxivProvider {
 }
 
 impl ArxivProvider {
-    pub fn new() -> Self {
+    pub fn new() -> Self {E
         Self {
             client: Client::builder()
                 .timeout(std::time::Duration::from_secs(30))
@@ -42,7 +42,7 @@ impl ArxivProvider {
 
         let root = doc.root_element();
         let ns = "http://www.w3.org/2005/Atom";
-4
+
         let papers: Vec<Paper> = root
             .children()
             .filter(|n| n.has_tag_name((ns, "entry")))
