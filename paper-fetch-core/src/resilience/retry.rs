@@ -16,8 +16,8 @@ where
 {
     let backoff = ExponentialBuilder::default()
         .with_max_times(config.retry_max_attempts)
-        .with_min_delay(config.retry_min_backoff)
-        .with_max_delay(config.retry_max_backoff)
+        .with_min_delay(config.retry_min_backoff())
+        .with_max_delay(config.retry_max_backoff())
         .with_jitter();
 
     operation

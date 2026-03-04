@@ -3,7 +3,7 @@ use reqwest::Client;
 use roxmltree;
 
 use crate::error::PaperFetchError;
-use crate::models::{Paper, SearchQuery, SearchType};
+use crate::models::{Paper, SearchQuery, SearchResult, SearchType};
 use crate::ports::provider::PaperProvider;
 
 pub struct ArxivProvider {
@@ -12,7 +12,7 @@ pub struct ArxivProvider {
 }
 
 impl ArxivProvider {
-    pub fn new() -> Self {E
+    pub fn new() -> Self {
         Self {
             client: Client::builder()
                 .timeout(std::time::Duration::from_secs(30))
@@ -26,7 +26,7 @@ impl ArxivProvider {
         let search_prefix = match query.search_type {
             SearchType::Keywords => "all:",
             SearchType::Title => "ti:",
-            SearchType::Author => "au;",
+            SearchType::Author => "au:",
             _ => "all:",
         };
 
@@ -51,6 +51,10 @@ impl ArxivProvider {
 
         Ok(papers)
     }
+
+    fn extract_paper(&self, entry: roxmltree::Node, ns: &str) -> Result<Paper, PaperFetchError> {
+        todo!()
+    }
 }
 
 #[async_trait]
@@ -65,5 +69,14 @@ impl PaperProvider for ArxivProvider {
 
     fn supported_search_types(&self) -> Vec<SearchType> {
         vec![SearchType::Keywords, SearchType::Title, SearchType::Author]
+    }
+
+    async fn search(&self, query: &SearchQuery) -> Result<SearchResult, PaperFetchError> {
+        Ok(SearchResult {
+            papers: todo!(),
+            total_results: todo!(),
+            next_offset: todo!(),
+            provider: todo!(),
+        })
     }
 }
