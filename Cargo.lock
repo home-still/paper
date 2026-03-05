@@ -18,6 +18,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.102"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f202df86484c868dbad7eaa557ef785d5c66295e41b460ef922eca0723b842c"
+
+[[package]]
 name = "api"
 version = "0.1.0"
 
@@ -881,6 +887,7 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 name = "paper-fetch-core"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-trait",
  "backon",
  "chrono",
@@ -891,7 +898,7 @@ dependencies = [
  "roxmltree",
  "serde",
  "serde_json",
- "serde_yaml",
+ "serde_yaml_ng",
  "thiserror",
  "tokio",
  "url",
@@ -1330,10 +1337,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_yaml"
-version = "0.9.34+deprecated"
+name = "serde_yaml_ng"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a8b1a1a2ebf674015cc02edccce75287f1a0130d394307b36743c2f5d504b47"
+checksum = "7b4db627b98b36d4203a7b458cf3573730f2bb591b28871d916dfa9efabfd41f"
 dependencies = [
  "indexmap",
  "itoa",
