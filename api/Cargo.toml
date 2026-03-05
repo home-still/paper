@@ -1,6 +1,21 @@
 [package]
-name = "api"
+name = "paper-fetch-cli"
 version = "0.1.0"
-edition = "2024"
+edition = "2021"
+
+[[bin]]
+name = "paper-fetch"
+path = "src/main.rs"
 
 [dependencies]
+paper-fetch-core = { path = "../paper-fetch-core" }
+clap = { version = "4", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+serde_json = "1"
+serde_yaml_ng = "0.10"
+serde = { version = "1.0.228", features = ["derive"] }
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
