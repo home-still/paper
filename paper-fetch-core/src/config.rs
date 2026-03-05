@@ -24,8 +24,12 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             resilience: ResilienceConfig::default(),
-            download_path: PathBuf::from("./downloads"),
-            cache_path: PathBuf::from("./cache"),
+            download_path: dirs::home_dir()
+                .map(|h| h.join("Downloads/home-still/papers"))
+                .unwrap_or_else(|| PathBuf::from("./downloads")),
+            cache_path: dirs::home_dir()
+                .map(|h| h.join(".home-still/paper-fetch/cache"))
+                .unwrap_or_else(|| PathBuf::from("./cache")),
             providers: ProvidersConfig::default(),
         }
     }
@@ -42,7 +46,25 @@ impl Config {
         };
 
         if !path.exists() {
-            return Ok(Self::default());
+            let config = Self::default();
+
+            // Create parent directories
+            if let Some(parent) = path.parent() {
+                fs::create_dir_all(parent).with_context(|| {
+                    format!("Failed to create config directory {}", parent.display())
+                })?;
+            }
+
+            // Write default config
+            let yaml =
+                serde_yaml_ng::to_string(&config).context("Failed to serialize default config")?;
+
+            fs::write(&path, yaml)
+                .with_context(|| format!("Failed to write default config to {}", path.display()))?;
+
+            eprintln!("Created default config at {}", path.display());
+
+            return Ok(config);
         }
 
         let contents = fs::read_to_string(&path)
