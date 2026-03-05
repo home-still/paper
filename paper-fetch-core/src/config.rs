@@ -18,6 +18,9 @@ pub struct Config {
 
     /// Paper providers
     pub providers: ProvidersConfig,
+
+    /// Download config
+    pub download: DownloadConfig,
 }
 
 impl Default for Config {
@@ -31,6 +34,7 @@ impl Default for Config {
                 .map(|h| h.join(".home-still/paper-fetch/cache"))
                 .unwrap_or_else(|| PathBuf::from("./cache")),
             providers: ProvidersConfig::default(),
+            download: DownloadConfig::default(),
         }
     }
 }
@@ -104,4 +108,21 @@ impl Default for ArxivConfig {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ProvidersConfig {
     pub arxiv: ArxivConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DownloadConfig {
+    /// Maximum concurrent downloads
+    pub max_concurrent: usize,
+    /// Per-file download timeout in seconds
+    pub timeout_secs: u64,
+}
+
+impl Default for DownloadConfig {
+    fn default() -> Self {
+        Self {
+            max_concurrent: 4,
+            timeout_secs: 120,
+        }
+    }
 }

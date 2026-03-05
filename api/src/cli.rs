@@ -91,6 +91,35 @@ pub enum PaperAction {
         #[arg(short, long, default_value = "arxiv")]
         provider: ProviderArg,
     },
+    /// Download papers (search + download, or single DOI)
+    ///
+    /// Examples:
+    ///   paper-fetch paper download "neural nets" -n 25
+    ///   paper-fetch paper download --doi "10.48550/arXiv.2301.00001"
+    Download {
+        /// Search query (downloads matching papers)
+        query: Option<String>,
+
+        /// Download a single paper by DOI
+        #[arg(long, conflicts_with = "query")]
+        doi: Option<String>,
+
+        /// Maximum number of papers to download (1-100)
+        #[arg(short = 'n', long, default_value = "10", value_parser = clap::value_parser!(u16).range(1..=100))]
+        max_results: u16,
+
+        /// Maximum concurrent downloads
+        #[arg(short = 'c', long, default_value = "4")]
+        concurrency: usize,
+
+        /// Search type for query-based download
+        #[arg(short = 't', long = "type", default_value = "keywords")]
+        search_type: SearchTypeArg,
+
+        /// Provider to search
+        #[arg(short, long, default_value = "arxiv")]
+        provider: ProviderArg,
+    },
 }
 
 #[derive(Subcommand, Debug)]

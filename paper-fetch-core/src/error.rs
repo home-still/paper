@@ -25,6 +25,12 @@ pub enum PaperFetchError {
 
     #[error("Parse error: {0}")]
     ParseError(String),
+
+    #[error("I/O error: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("No download URL for paper: {0}")]
+    NoDownloadUrl(String),
 }
 
 #[derive(Debug, Clone, Copy)]

@@ -60,3 +60,17 @@ pub struct PaperMetadata {
     pub doi: Option<String>,
     pub confidence_score: f32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BatchDownloadResult {
+    pub succeeded: Vec<DownloadResult>,
+    pub failed: Vec<DownloadFailure>,
+    pub total_requested: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DownloadFailure {
+    pub paper_id: String,
+    pub title: String,
+    pub error: String,
+}

@@ -15,6 +15,8 @@ pub fn from_error(err: &anyhow::Error) -> ExitCode {
                 NotFound(_) | ParseError(_) => GENERAL_ERROR,
                 Http(_) | RateLimited { .. } => TEMPFAIL,
                 ProviderUnavailable(_) | CircuitBreakerOpen(_) => UNAVAILABLE,
+                Io(_) => GENERAL_ERROR,
+                NoDownloadUrl(_) => USAGE_ERROR,
             });
         }
     }
