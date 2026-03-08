@@ -18,7 +18,7 @@ impl ProviderRateLimiter {
                     "requests_per_second must be greater than 0",
                 ))
             })
-            .map(|n| Quota::per_second(n))?;
+            .map(Quota::per_second)?;
 
         Ok(Self {
             limiters: Arc::new(RwLock::new(HashMap::new())),

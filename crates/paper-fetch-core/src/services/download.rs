@@ -121,6 +121,7 @@ pub async fn download_batch(
     }
 }
 
+#[allow(clippy::type_complexity)]
 async fn download_single(
     service: &dyn DownloadService,
     paper: &Paper,
@@ -163,5 +164,5 @@ async fn download_single(
 }
 
 fn sanitize_filename(id: &str) -> String {
-    id.replace('/', "_").replace('\\', "_").replace(':', "_")
+    id.replace(['/', '\\', ':'], "_")
 }

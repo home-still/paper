@@ -99,7 +99,7 @@ impl ArxivProvider {
             .filter(|n| n.has_tag_name((ns, "link")))
             .find(|n| n.attribute("title") == Some("pdf"))
             .and_then(|n| n.attribute("href"))
-            .map(|s| String::from(s));
+            .map(String::from);
 
         let doi = entry
             .children()
