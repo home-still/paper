@@ -1,0 +1,3 @@
+[submodule "hs-style"]
+    path = hs-style
+    url  = https://github.com/home-still/hs-style.git
