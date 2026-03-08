@@ -7,19 +7,32 @@ use crate::error::PaperFetchError;
 use crate::models::{BatchDownloadResult, DownloadFailure, DownloadResult, Paper};
 use crate::ports::download_service::DownloadService;
 
-pub enum ProgressEvent {
-    Started,
-    Completed(u64),
-    Failed(String),
+pub enum DownloadEvent {
+    Started {
+        index: usize,
+        total: usize,
+        title: String,
+    },
+    Completed {
+        index: usize,
+        total: usize,
+        size_bytes: u64,
+    },
+    Failed {
+        index: usize,
+        total: usize,
+        title: String,
+        error: String,
+    },
 }
 
-pub type ProgressCallback = Box<dyn Fn(usize, usize, &str, &ProgressEvent) + Send + Sync>;
+pub type OnProgress = Arc<dyn Fn(DownloadEvent) + Send + Sync>;
 
 pub async fn download_batch(
     service: Arc<dyn DownloadService>,
     papers: Vec<Paper>,
     max_concurrent: usize,
-    on_progress: Option<ProgressCallback>,
+    on_progress: Option<OnProgress>,
 ) -> BatchDownloadResult {
     let total = papers.len();
     let completed = Arc::new(AtomicUsize::new(0));
@@ -36,7 +49,11 @@ pub async fn download_batch(
 
                 if let Some(ref cb) = on_progress {
                     let count = completed.load(Ordering::Relaxed);
-                    cb(count, total, &title, &ProgressEvent::Started);
+                    cb(DownloadEvent::Started {
+                        index: count,
+                        total,
+                        title: title.clone(),
+                    })
                 }
 
                 let result = download_single(service.as_ref(), &paper).await;
@@ -46,17 +63,21 @@ pub async fn download_batch(
                 match &result {
                     Ok(dr) => {
                         if let Some(ref cb) = on_progress {
-                            cb(
-                                count,
+                            cb(DownloadEvent::Completed {
+                                index: count,
                                 total,
-                                &title,
-                                &ProgressEvent::Completed(dr.size_bytes),
-                            );
+                                size_bytes: dr.size_bytes,
+                            })
                         }
                     }
                     Err((_, err)) => {
                         if let Some(ref cb) = on_progress {
-                            cb(count, total, &title, &ProgressEvent::Failed(err.clone()));
+                            cb(DownloadEvent::Failed {
+                                index: count,
+                                total,
+                                title: title.clone(),
+                                error: String::from(err),
+                            })
                         }
                     }
                 }
