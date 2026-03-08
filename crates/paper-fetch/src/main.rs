@@ -16,7 +16,7 @@ use std::process::ExitCode;
 fn main() -> ExitCode {
     let cli = Cli::parse();
 
-    let mode = mode::detect(&cli.global.color_str(), cli.global.is_json());
+    let mode = mode::detect(cli.global.color_str(), cli.global.is_json());
 
     match mode {
         OutputMode::Rich => owo_colors::set_override(true),
