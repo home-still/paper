@@ -9,15 +9,15 @@ path = "src/main.rs"
 
 [dependencies]
 paper-fetch-core = { path = "../paper-fetch-core" }
-clap = { version = "4", features = ["derive"] }
-tokio = { version = "1", features = ["full"] }
-anyhow = "1"
-serde_json = "1"
-serde_yaml_ng = "0.10"
-serde = { version = "1.0.228", features = ["derive"] }
-owo-colors = { version = "4.3", features = ["supports-colors"] }
+clap = { workspace = true }
+tokio = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+owo-colors = { workspace = true }
+hs-style = { workspace = true, features = ["cli"] }
+serde_yaml_ng = { workspace = true }
 
-hs-style = { path = "../../hs-style", features = ["cli"] }
 
 [dev-dependencies]
 assert_cmd = "2"
