@@ -1,4 +1,4 @@
-use crate::error::PaperFetchError;
+use crate::error::PaperError;
 use crate::models::{SearchQuery, SearchResult, SearchType};
 use async_trait::async_trait;
 
@@ -8,7 +8,7 @@ pub trait PaperProvider: Send + Sync {
 
     fn supported_search_types(&self) -> Vec<SearchType>;
 
-    async fn search(&self, query: &SearchQuery) -> Result<SearchResult, PaperFetchError>;
+    async fn search(&self, query: &SearchQuery) -> Result<SearchResult, PaperError>;
 
     fn priority(&self) -> u8 {
         100
@@ -17,11 +17,11 @@ pub trait PaperProvider: Send + Sync {
     async fn get_by_doi(
         &self,
         _doi: &str,
-    ) -> Result<Option<crate::models::Paper>, PaperFetchError> {
+    ) -> Result<Option<crate::models::Paper>, PaperError> {
         Ok(None)
     }
 
-    async fn health_check(&self) -> Result<(), PaperFetchError> {
+    async fn health_check(&self) -> Result<(), PaperError> {
         Ok(())
     }
 }

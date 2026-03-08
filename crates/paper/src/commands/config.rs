@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use paper_fetch_core::config::Config;
+use paper_core::config::Config;
 
 use crate::cli::{ConfigAction, GlobalOpts};
 use crate::output;

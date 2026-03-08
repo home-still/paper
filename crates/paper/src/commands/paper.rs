@@ -5,12 +5,12 @@ use std::sync::Mutex;
 use anyhow::{Context, Result};
 use hs_style::reporter::Reporter;
 use hs_style::styles::Styles;
-use paper_fetch_core::config::Config;
-use paper_fetch_core::models::SearchQuery;
-use paper_fetch_core::ports::provider::PaperProvider;
-use paper_fetch_core::providers::arxiv::ArxivProvider;
-use paper_fetch_core::providers::downloader::PaperDownloader;
-use paper_fetch_core::services::download::{download_batch, DownloadEvent, OnProgress};
+use paper_core::config::Config;
+use paper_core::models::SearchQuery;
+use paper_core::ports::provider::PaperProvider;
+use paper_core::providers::arxiv::ArxivProvider;
+use paper_core::providers::downloader::PaperDownloader;
+use paper_core::services::download::{download_batch, DownloadEvent, OnProgress};
 
 use crate::cli::{GlobalOpts, PaperAction, ProviderArg};
 use crate::output;
@@ -98,7 +98,7 @@ pub async fn run(
 
             let downloader = PaperDownloader::new(config.download_path.clone(), &config.download)
                 .context("Failed to create downloader")?;
-            let downloader: Arc<dyn paper_fetch_core::ports::download_service::DownloadService> =
+            let downloader: Arc<dyn paper_core::ports::download_service::DownloadService> =
                 Arc::new(downloader);
 
             if let Some(doi_str) = doi {

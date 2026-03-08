@@ -1112,7 +1112,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "paper-fetch-cli"
+name = "paper-cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -1120,7 +1120,7 @@ dependencies = [
  "clap",
  "hs-style",
  "owo-colors",
- "paper-fetch-core",
+ "paper-core",
  "predicates",
  "serde",
  "serde_json",
@@ -1129,7 +1129,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "paper-fetch-core"
+name = "paper-core"
 version = "0.1.0"
 dependencies = [
  "anyhow",

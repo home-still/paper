@@ -4,7 +4,7 @@ use reqwest::Client;
 use roxmltree;
 
 use crate::config::ArxivConfig;
-use crate::error::PaperFetchError;
+use crate::error::PaperError;
 use crate::models::{Paper, SearchQuery, SearchResult, SearchType};
 use crate::ports::provider::PaperProvider;
 
@@ -26,7 +26,7 @@ impl ArxivProvider {
         })
     }
 
-    fn build_query_url(&self, query: &SearchQuery) -> Result<String, PaperFetchError> {
+    fn build_query_url(&self, query: &SearchQuery) -> Result<String, PaperError> {
         let search_prefix = match query.search_type {
             SearchType::Keywords => "all:",
             SearchType::Title => "ti:",
@@ -44,17 +44,17 @@ impl ArxivProvider {
                 ("max_results", &query.max_results.to_string()),
             ],
         )
-        .map_err(|e| PaperFetchError::InvalidInput(e.to_string()))?;
+        .map_err(|e| PaperError::InvalidInput(e.to_string()))?;
 
         Ok(url.to_string())
     }
 
-    fn extract_paper(&self, entry: roxmltree::Node, ns: &str) -> Result<Paper, PaperFetchError> {
+    fn extract_paper(&self, entry: roxmltree::Node, ns: &str) -> Result<Paper, PaperError> {
         let id = entry
             .children()
             .find(|n| n.has_tag_name((ns, "id")))
             .and_then(|n| n.text())
-            .ok_or_else(|| PaperFetchError::ParseError("Missing ID".into()))?;
+            .ok_or_else(|| PaperError::ParseError("Missing ID".into()))?;
         // Extract just the arxiv ID from the full URL.
         // e.g., "http://arxiv.org/abs/1234.5678v1" -> "1234.5678v1"
         let short_id = id.rsplit("/").next().unwrap_or(id);
@@ -63,7 +63,7 @@ impl ArxivProvider {
             .children()
             .find(|n| n.has_tag_name((ns, "title")))
             .and_then(|n| n.text())
-            .ok_or_else(|| PaperFetchError::ParseError("Missing title".into()))?
+            .ok_or_else(|| PaperError::ParseError("Missing title".into()))?
             .trim()
             .to_string();
 
@@ -119,9 +119,9 @@ impl ArxivProvider {
         })
     }
 
-    fn parse_atom_feed(&self, xml: &str) -> Result<(Vec<Paper>, usize), PaperFetchError> {
+    fn parse_atom_feed(&self, xml: &str) -> Result<(Vec<Paper>, usize), PaperError> {
         let doc = roxmltree::Document::parse(xml)
-            .map_err(|e| PaperFetchError::ParseError(e.to_string()))?;
+            .map_err(|e| PaperError::ParseError(e.to_string()))?;
 
         let root = doc.root_element();
         let ns = "http://www.w3.org/2005/Atom";
@@ -158,13 +158,13 @@ impl PaperProvider for ArxivProvider {
         vec![SearchType::Keywords, SearchType::Title, SearchType::Author]
     }
 
-    async fn search(&self, query: &SearchQuery) -> Result<SearchResult, PaperFetchError> {
+    async fn search(&self, query: &SearchQuery) -> Result<SearchResult, PaperError> {
         let url = self.build_query_url(query)?;
 
         let response = self.client.get(&url).send().await?;
 
         if !response.status().is_success() {
-            return Err(PaperFetchError::ProviderUnavailable(format!(
+            return Err(PaperError::ProviderUnavailable(format!(
                 "arXiv returned {}",
                 response.status()
             )));
@@ -181,7 +181,7 @@ impl PaperProvider for ArxivProvider {
         })
     }
 
-    async fn get_by_doi(&self, doi: &str) -> Result<Option<Paper>, PaperFetchError> {
+    async fn get_by_doi(&self, doi: &str) -> Result<Option<Paper>, PaperError> {
         let query = SearchQuery {
             query: String::from(doi),
             search_type: SearchType::DOI,

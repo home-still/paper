@@ -1,5 +1,5 @@
 use anyhow::Result;
-use paper_fetch_core::models::{Paper, SearchResult};
+use paper_core::models::{Paper, SearchResult};
 use serde::Serialize;
 
 use hs_style::styles::Styles;

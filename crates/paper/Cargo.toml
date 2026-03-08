@@ -1,14 +1,14 @@
 [package]
-name = "paper-fetch-cli"
+name = "paper-cli"
 version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "paper-fetch"
+name = "paper"
 path = "src/main.rs"
 
 [dependencies]
-paper-fetch-core = { path = "../paper-fetch-core" }
+paper-core = { path = "../paper-core" }
 clap = { workspace = true }
 tokio = { workspace = true }
 anyhow = { workspace = true }

@@ -1,5 +1,5 @@
 use super::config::ResilienceConfig;
-use crate::error::{ErrorCategory, PaperFetchError};
+use crate::error::{ErrorCategory, PaperError};
 use backon::{ExponentialBuilder, Retryable};
 
 /// Retries an async operation with exponential backoff.
@@ -9,10 +9,10 @@ use backon::{ExponentialBuilder, Retryable};
 pub async fn retry_with_backoff<F, Fut, T>(
     config: &ResilienceConfig,
     operation: F,
-) -> Result<T, PaperFetchError>
+) -> Result<T, PaperError>
 where
     F: FnMut() -> Fut,
-    Fut: std::future::Future<Output = Result<T, PaperFetchError>>,
+    Fut: std::future::Future<Output = Result<T, PaperError>>,
 {
     let backoff = ExponentialBuilder::default()
         .with_max_times(config.retry_max_attempts)

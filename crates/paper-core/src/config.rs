@@ -34,7 +34,7 @@ impl Default for Config {
                 .map(|h| h.join("Downloads/home-still/papers"))
                 .unwrap_or_else(|| PathBuf::from("./downloads")),
             cache_path: dirs::home_dir()
-                .map(|h| h.join(".home-still/paper-fetch/cache"))
+                .map(|h| h.join(".home-still/paper/cache"))
                 .unwrap_or_else(|| PathBuf::from("./cache")),
             providers: ProvidersConfig::default(),
             download: DownloadConfig::default(),
@@ -44,7 +44,7 @@ impl Default for Config {
 
 impl Config {
     pub fn config_path() -> Option<PathBuf> {
-        dirs::home_dir().map(|h| h.join(".home-still/paper-fetch/config.yaml"))
+        dirs::home_dir().map(|h| h.join(".home-still/paper/config.yaml"))
     }
 
     pub fn load() -> anyhow::Result<Self> {
@@ -61,7 +61,7 @@ impl Config {
                 figment = figment.merge(Yaml::file(&user_path));
             }
 
-            let app_path = home.join(".home-still/paper-fetch/config.yaml");
+            let app_path = home.join(".home-still/paper/config.yaml");
             if app_path.exists() {
                 figment = figment.merge(Yaml::file(&app_path));
             }

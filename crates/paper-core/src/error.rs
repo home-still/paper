@@ -1,7 +1,7 @@
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-pub enum PaperFetchError {
+pub enum PaperError {
     #[error("Invalid input: {0}")]
     InvalidInput(String),
 
@@ -41,7 +41,7 @@ pub enum ErrorCategory {
     CircuitBreaker,
 }
 
-impl PaperFetchError {
+impl PaperError {
     pub fn category(&self) -> ErrorCategory {
         match self {
             Self::InvalidInput(_) => ErrorCategory::Permanent,
@@ -57,7 +57,7 @@ impl PaperFetchError {
 
     pub fn retry_after(&self) -> Option<std::time::Duration> {
         match self {
-            PaperFetchError::RateLimited { retry_after, .. } => *retry_after,
+            PaperError::RateLimited { retry_after, .. } => *retry_after,
             _ => None,
         }
     }

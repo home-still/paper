@@ -4,8 +4,8 @@ use hs_style::exit_codes::*;
 
 pub fn from_error(err: &anyhow::Error) -> ExitCode {
     for cause in err.chain() {
-        if let Some(pfe) = cause.downcast_ref::<paper_fetch_core::error::PaperFetchError>() {
-            use paper_fetch_core::error::PaperFetchError::*;
+        if let Some(pfe) = cause.downcast_ref::<paper_core::error::PaperError>() {
+            use paper_core::error::PaperError::*;
             return ExitCode::from(match pfe {
                 InvalidInput(_) | NoDownloadUrl(_) => USAGE_ERROR,
                 NotFound(_) | ParseError(_) => GENERAL_ERROR,

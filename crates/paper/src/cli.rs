@@ -1,15 +1,15 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
-/// paper-fetch — meta-search tool for academic papers
+/// paper — meta-search tool for academic papers
 ///
 /// Examples:
-///   paper-fetch paper search "transformer attention mechanisms"
-///   paper-fetch paper search --type title "neural networks" -n 5
-///   paper-fetch paper get --doi "10.48550/arXiv.2301.00001"
-///   paper-fetch paper search "deep learning" --output json
-///   paper-fetch config show
+///   paper paper search "transformer attention mechanisms"
+///   paper paper search --type title "neural networks" -n 5
+///   paper paper get --doi "10.48550/arXiv.2301.00001"
+///   paper paper search "deep learning" --output json
+///   paper config show
 #[derive(Parser, Debug)]
-#[command(name = "paper-fetch", version, about, long_about = None)]
+#[command(name = "paper", version, about, long_about = None)]
 pub struct Cli {
     #[command(flatten)]
     pub global: GlobalOpts,
@@ -64,8 +64,8 @@ pub enum PaperAction {
     /// Search for papers across providers
     ///
     /// Examples:
-    ///   paper-fetch paper search "transformer attention"
-    ///   paper-fetch paper search --type author "Hinton" -n 5
+    ///   paper paper search "transformer attention"
+    ///   paper paper search --type author "Hinton" -n 5
     Search {
         /// Search query string
         query: String,
@@ -89,7 +89,7 @@ pub enum PaperAction {
     /// Get a single paper by DOI
     ///
     /// Examples:
-    ///   paper-fetch paper get --doi "10.48550/arXiv.2301.00001"
+    ///   paper paper get --doi "10.48550/arXiv.2301.00001"
     Get {
         /// DOI to look up
         #[arg(long)]
@@ -102,8 +102,8 @@ pub enum PaperAction {
     /// Download papers (search + download, or single DOI)
     ///
     /// Examples:
-    ///   paper-fetch paper download "neural nets" -n 25
-    ///   paper-fetch paper download --doi "10.48550/arXiv.2301.00001"
+    ///   paper paper download "neural nets" -n 25
+    ///   paper paper download --doi "10.48550/arXiv.2301.00001"
     Download {
         /// Search query (downloads matching papers)
         query: Option<String>,
@@ -154,7 +154,7 @@ pub enum ProviderArg {
     Arxiv,
 }
 
-impl From<SearchTypeArg> for paper_fetch_core::models::SearchType {
+impl From<SearchTypeArg> for paper_core::models::SearchType {
     fn from(arg: SearchTypeArg) -> Self {
         match arg {
             SearchTypeArg::Keywords => Self::Keywords,

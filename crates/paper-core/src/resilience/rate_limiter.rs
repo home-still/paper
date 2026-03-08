@@ -11,10 +11,10 @@ pub struct ProviderRateLimiter {
 }
 
 impl ProviderRateLimiter {
-    pub fn new(config: &ResilienceConfig) -> Result<Self, crate::error::PaperFetchError> {
+    pub fn new(config: &ResilienceConfig) -> Result<Self, crate::error::PaperError> {
         let quota = NonZeroU32::new(config.rate_limit_rps)
             .ok_or_else(|| {
-                crate::error::PaperFetchError::InvalidInput(String::from(
+                crate::error::PaperError::InvalidInput(String::from(
                     "requests_per_second must be greater than 0",
                 ))
             })

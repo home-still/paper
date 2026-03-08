@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use futures::stream::{self, StreamExt};
 
-use crate::error::PaperFetchError;
+use crate::error::PaperError;
 use crate::models::{BatchDownloadResult, DownloadFailure, DownloadResult, Paper};
 use crate::ports::download_service::DownloadService;
 
@@ -151,7 +151,7 @@ async fn download_single(
     } else if let Some(ref doi) = paper.doi {
         service.download_by_doi(doi).await
     } else {
-        Err(PaperFetchError::NoDownloadUrl(paper.id.clone()))
+        Err(PaperError::NoDownloadUrl(paper.id.clone()))
     };
 
     match result {

@@ -7,7 +7,7 @@ use sha2::{Digest, Sha256};
 use tokio::io::AsyncWriteExt;
 
 use crate::config::DownloadConfig;
-use crate::error::PaperFetchError;
+use crate::error::PaperError;
 use crate::models::DownloadResult;
 use crate::ports::download_service::DownloadService;
 
@@ -17,7 +17,7 @@ pub struct PaperDownloader {
 }
 
 impl PaperDownloader {
-    pub fn new(download_path: PathBuf, config: &DownloadConfig) -> Result<Self, PaperFetchError> {
+    pub fn new(download_path: PathBuf, config: &DownloadConfig) -> Result<Self, PaperError> {
         let client = Client::builder()
             .timeout(std::time::Duration::from_secs(config.timeout_secs))
             .build()?;
@@ -31,11 +31,11 @@ impl PaperDownloader {
 
 #[async_trait]
 impl DownloadService for PaperDownloader {
-    async fn download_by_doi(&self, doi: &str) -> Result<DownloadResult, PaperFetchError> {
+    async fn download_by_doi(&self, doi: &str) -> Result<DownloadResult, PaperError> {
         // TODO: Handle other providers
 
         let arxiv_id = doi.strip_prefix("10.48550/arXiv.").ok_or_else(|| {
-            PaperFetchError::NotFound(format!("Cannot resolve download URL for DOI: {}", doi))
+            PaperError::NotFound(format!("Cannot resolve download URL for DOI: {}", doi))
         })?;
 
         let url = format!("https://arxiv.org/pdf/{}", arxiv_id);
@@ -48,7 +48,7 @@ impl DownloadService for PaperDownloader {
         url: &str,
         filename: &str,
         on_progress: Option<&(dyn Fn(u64, Option<u64>) + Send + Sync)>,
-    ) -> Result<DownloadResult, PaperFetchError> {
+    ) -> Result<DownloadResult, PaperError> {
         // Ensure download directory exists
         tokio::fs::create_dir_all(&self.download_path).await?;
 
