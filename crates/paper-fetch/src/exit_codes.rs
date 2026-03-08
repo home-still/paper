@@ -10,7 +10,7 @@ pub fn from_error(err: &anyhow::Error) -> ExitCode {
                 InvalidInput(_) | NoDownloadUrl(_) => USAGE_ERROR,
                 NotFound(_) | ParseError(_) => GENERAL_ERROR,
                 Http(_) | RateLimited { .. } | ProviderUnavailable(_) | CircuitBreakerOpen(_) => {
-                    UNAVAILABLE
+                    NETWORK_ERROR
                 }
                 Io(_) => GENERAL_ERROR,
             });
