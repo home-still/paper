@@ -16,6 +16,7 @@ anyhow = "1"
 hs-style = { path = "hs-style" }
 owo-colors = { version = "4.3", features = ["supports-colors"] }
 serde_yaml_ng = "0.10"
+figment = { version = "0.10", features = ["yaml", "env"] }
 
 [profile.release]
 opt-level = 3

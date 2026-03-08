@@ -1,7 +1,10 @@
 use crate::resilience::config::ResilienceConfig;
 use anyhow::Context;
+use figment::{
+    providers::{Env, Format, Serialized, Yaml},
+    Figment,
+};
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::path::PathBuf;
 
 /// Main application configuration
@@ -45,48 +48,30 @@ impl Config {
     }
 
     pub fn load() -> anyhow::Result<Self> {
-        let Some(path) = Self::config_path() else {
-            return Ok(Self::default());
-        };
+        let mut figment = Figment::new().merge(Serialized::defaults(Config::default()));
 
-        if !path.exists() {
-            let config = Self::default();
-
-            // Create parent directories
-            if let Some(parent) = path.parent() {
-                fs::create_dir_all(parent).with_context(|| {
-                    format!("Failed to create config directory {}", parent.display())
-                })?;
-            }
-
-            // Write default config
-            let yaml =
-                serde_yaml_ng::to_string(&config).context("Failed to serialize default config")?;
-
-            fs::write(&path, yaml)
-                .with_context(|| format!("Failed to write default config to {}", path.display()))?;
-
-            eprintln!("Created default config at {}", path.display());
-
-            return Ok(config);
+        let system_path = PathBuf::from("/etc/home-still/config.yaml");
+        if system_path.exists() {
+            figment = figment.merge(Yaml::file(&system_path));
         }
 
-        let contents = fs::read_to_string(&path)
-            .with_context(|| format!("Failed to read config at {}", path.display()))?;
+        if let Some(home) = dirs::home_dir() {
+            let user_path = home.join(".home-still/config.yaml");
+            if user_path.exists() {
+                figment = figment.merge(Yaml::file(&user_path));
+            }
 
-        serde_yaml_ng::from_str(&contents)
-            .with_context(|| format!("Failed to parse config at {}", path.display()))
-    }
+            let app_path = home.join(".home-still/paper-fetch/config.yaml");
+            if app_path.exists() {
+                figment = figment.merge(Yaml::file(&app_path));
+            }
+        }
 
-    /// Creates config with custom download directory
-    pub fn with_download_path(mut self, path: PathBuf) -> Self {
-        self.download_path = path;
-        self
-    }
-    /// Creates config with custom cache directory
-    pub fn with_cache_path(mut self, path: PathBuf) -> Self {
-        self.cache_path = path;
-        self
+        figment = figment.merge(Env::prefixed("HOME_STILL_").split("_"));
+
+        let config: Config = figment.extract().context("Failed to load configuration")?;
+
+        Ok(config)
     }
 }
 
