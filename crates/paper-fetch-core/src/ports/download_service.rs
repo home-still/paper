@@ -10,5 +10,6 @@ pub trait DownloadService: Send + Sync {
         &self,
         url: &str,
         filename: &str,
+        on_progress: Option<&(dyn Fn(u64, Option<u64>) + Send + Sync)>,
     ) -> Result<DownloadResult, PaperFetchError>;
 }

@@ -40,13 +40,14 @@ impl DownloadService for PaperDownloader {
 
         let url = format!("https://arxiv.org/pdf/{}", arxiv_id);
         let filename = format!("{}.pdf", doi.replace('/', "_"));
-        self.download_by_url(&url, &filename).await
+        self.download_by_url(&url, &filename, None).await
     }
 
     async fn download_by_url(
         &self,
         url: &str,
         filename: &str,
+        on_progress: Option<&(dyn Fn(u64, Option<u64>) + Send + Sync)>,
     ) -> Result<DownloadResult, PaperFetchError> {
         // Ensure download directory exists
         tokio::fs::create_dir_all(&self.download_path).await?;
@@ -55,6 +56,8 @@ impl DownloadService for PaperDownloader {
 
         // Stream the response
         let response = self.client.get(url).send().await?.error_for_status()?;
+
+        let content_length = response.content_length();
 
         let mut stream = response.bytes_stream();
         let mut file = tokio::fs::File::create(&file_path).await?;
@@ -66,6 +69,11 @@ impl DownloadService for PaperDownloader {
             hasher.update(&bytes);
             size_bytes += bytes.len() as u64;
             file.write_all(&bytes).await?;
+
+            // Report byte level progress
+            if let Some(cb) = &on_progress {
+                cb(size_bytes, content_length);
+            }
         }
 
         file.flush().await?;

@@ -13,6 +13,12 @@ pub enum DownloadEvent {
         total: usize,
         title: String,
     },
+    Progress {
+        index: usize,
+        bytes_downloaded: u64,
+        bytes_total: Option<u64>,
+        title: String,
+    },
     Completed {
         index: usize,
         total: usize,
@@ -36,7 +42,6 @@ pub async fn download_batch(
 ) -> BatchDownloadResult {
     let total = papers.len();
     let completed = Arc::new(AtomicUsize::new(0));
-    let on_progress = on_progress.map(Arc::new);
 
     let results: Vec<Result<DownloadResult, (Paper, String)>> = stream::iter(papers)
         .map(|paper| {
@@ -56,7 +61,13 @@ pub async fn download_batch(
                     })
                 }
 
-                let result = download_single(service.as_ref(), &paper).await;
+                let result = download_single(
+                    service.as_ref(),
+                    &paper,
+                    on_progress.as_ref(),
+                    completed.load(Ordering::Relaxed),
+                )
+                .await;
 
                 let count = completed.fetch_add(1, Ordering::Relaxed) + 1;
 
@@ -113,11 +124,29 @@ pub async fn download_batch(
 async fn download_single(
     service: &dyn DownloadService,
     paper: &Paper,
+    on_progress: Option<&OnProgress>,
+    index: usize,
 ) -> Result<DownloadResult, (Paper, String)> {
     let filename = format!("{}.pdf", sanitize_filename(&paper.id));
+    let title = paper.title.clone();
+
+    let chunk_cb: Option<Box<dyn Fn(u64, Option<u64>) + Send + Sync>> = on_progress.map(|cb| {
+        let cb = Arc::clone(cb);
+        let title = title.clone();
+        Box::new(move |bytes_downloaded: u64, bytes_total: Option<u64>| {
+            cb(DownloadEvent::Progress {
+                index,
+                bytes_downloaded,
+                bytes_total,
+                title: title.clone(),
+            });
+        }) as Box<dyn Fn(u64, Option<u64>) + Send + Sync>
+    });
+
+    let progress_ref = chunk_cb.as_deref();
 
     let result = if let Some(ref url) = paper.download_url {
-        service.download_by_url(url, &filename).await
+        service.download_by_url(url, &filename, progress_ref).await
     } else if let Some(ref doi) = paper.doi {
         service.download_by_doi(doi).await
     } else {
