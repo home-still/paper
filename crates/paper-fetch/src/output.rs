@@ -2,7 +2,8 @@ use anyhow::Result;
 use paper_fetch_core::models::{Paper, SearchResult};
 use serde::Serialize;
 
-use crate::cli::GlobalOpts;
+use hs_style::styles::Styles;
+use owo_colors::OwoColorize;
 
 /// Print any Serialize value as JSON to stdout.
 pub fn print_json(value: &impl Serialize) -> Result<()> {
@@ -12,7 +13,7 @@ pub fn print_json(value: &impl Serialize) -> Result<()> {
 }
 
 /// Print search results as a human-readable list.
-pub fn print_search_result(result: &SearchResult, _global: &GlobalOpts) {
+pub fn print_search_result(result: &SearchResult, styles: &Styles) {
     eprintln!(
         "Found {} results from {} (showing {})\n",
         result.total_results,
@@ -21,7 +22,7 @@ pub fn print_search_result(result: &SearchResult, _global: &GlobalOpts) {
     );
 
     for (i, paper) in result.papers.iter().enumerate() {
-        print_paper_row(i + 1, paper);
+        print_paper_row(i + 1, paper, styles);
     }
 
     if let Some(offset) = result.next_offset {
@@ -34,7 +35,7 @@ pub fn print_search_result(result: &SearchResult, _global: &GlobalOpts) {
     }
 }
 
-fn print_paper_row(index: usize, paper: &Paper) {
+fn print_paper_row(index: usize, paper: &Paper, styles: &Styles) {
     let authors = paper
         .authors
         .iter()
@@ -47,21 +48,21 @@ fn print_paper_row(index: usize, paper: &Paper) {
         .map(|d| d.to_string())
         .unwrap_or_default();
 
-    println!("{}. {}", index, paper.title);
-    println!("   {} ({})", authors, date);
+    println!("{}. {}", index, paper.title.style(styles.title));
+    println!("   {} ({})", authors, date.style(styles.date));
     print!("   {}", paper.id);
     if let Some(doi) = &paper.doi {
-        print!("  doi:{doi}");
+        print!("  doi:{}", doi.style(styles.doi));
     }
     println!();
     if let Some(url) = &paper.download_url {
-        println!("   {url}");
+        println!("   {}", url.style(styles.url));
     }
     println!();
 }
 
 /// Print a single paper in human-readable format.
-pub fn print_paper(paper: &Paper, _global: &GlobalOpts) {
+pub fn print_paper(paper: &Paper, styles: &Styles) {
     let authors = paper
         .authors
         .iter()
@@ -69,17 +70,25 @@ pub fn print_paper(paper: &Paper, _global: &GlobalOpts) {
         .collect::<Vec<_>>()
         .join(", ");
 
-    println!("Title:    {}", paper.title);
-    println!("Authors:  {}", authors);
+    println!(
+        "{} {}",
+        "Title:".style(styles.label),
+        paper.title.style(styles.title)
+    );
+    println!("{} {}", "Authors:".style(styles.label), authors);
     if let Some(date) = paper.publication_date {
-        println!("Date:     {}", date);
+        println!(
+            "{} {}",
+            "Date:".style(styles.label),
+            date.style(styles.date)
+        );
     }
-    println!("ID:       {}", paper.id);
+    println!("{} {}", "ID:".style(styles.label), paper.id);
     if let Some(doi) = &paper.doi {
-        println!("DOI:      {}", doi);
+        println!("{} {}", "DOI:".style(styles.label), doi.style(styles.doi));
     }
     if let Some(url) = &paper.download_url {
-        println!("PDF:      {}", url);
+        println!("{} {}", "PDF:".style(styles.label), url.style(styles.url));
     }
     if let Some(abs) = &paper.abstract_text {
         println!("\n{}", abs);

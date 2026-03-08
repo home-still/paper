@@ -15,6 +15,9 @@ anyhow = "1"
 serde_json = "1"
 serde_yaml_ng = "0.10"
 serde = { version = "1.0.228", features = ["derive"] }
+owo-colors = { version = "4.3", features = ["supports-colors"] }
+
+hs-style = { path = "../../hs-style", features = ["cli"] }
 
 [dev-dependencies]
 assert_cmd = "2"

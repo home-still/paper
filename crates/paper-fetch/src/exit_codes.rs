@@ -4,7 +4,6 @@ pub const GENERAL_ERROR: u8 = 1;
 pub const USAGE_ERROR: u8 = 2;
 pub const UNAVAILABLE: u8 = 69;
 pub const TEMPFAIL: u8 = 75;
-pub const CONFIG_ERROR: u8 = 78;
 
 pub fn from_error(err: &anyhow::Error) -> ExitCode {
     for cause in err.chain() {

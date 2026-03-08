@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
 use anyhow::{Context, Result};
+use hs_style::reporter::Reporter;
+use hs_style::styles::Styles;
 use paper_fetch_core::config::Config;
 use paper_fetch_core::models::SearchQuery;
 use paper_fetch_core::ports::provider::PaperProvider;
@@ -11,7 +13,12 @@ use paper_fetch_core::services::download::{download_batch, ProgressEvent};
 use crate::cli::{GlobalOpts, PaperAction, ProviderArg};
 use crate::output;
 
-pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
+pub async fn run(
+    action: PaperAction,
+    global: &GlobalOpts,
+    reporter: &Arc<dyn Reporter>,
+    styles: &Styles,
+) -> Result<()> {
     match action {
         PaperAction::Search {
             query,
@@ -23,9 +30,7 @@ pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
             let config = Config::load().context("Failed to load config")?;
             let provider = make_provider(&provider, &config)?;
 
-            if global.verbose {
-                eprintln!("Searching {} for: {}", provider.name(), query);
-            }
+            reporter.status("Searching", &format!("{} for:{}", provider.name(), query));
 
             let search_query = SearchQuery {
                 query,
@@ -42,7 +47,7 @@ pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
             if global.json {
                 output::print_json(&result)?;
             } else {
-                output::print_search_result(&result, global);
+                output::print_search_result(&result, styles);
             }
 
             Ok(())
@@ -51,9 +56,7 @@ pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
             let config = Config::load().context("Failed to load config")?;
             let provider = make_provider(&provider, &config)?;
 
-            if global.verbose {
-                eprintln!("Looking up DOI: {}", doi);
-            }
+            reporter.status("Looking up", &format!("DOI: {}", doi));
 
             let paper = provider
                 .get_by_doi(&doi)
@@ -65,7 +68,7 @@ pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
                     if global.json {
                         output::print_json(&p)?;
                     } else {
-                        output::print_paper(&p, global);
+                        output::print_paper(&p, styles);
                     }
                 }
                 None => {
@@ -92,9 +95,8 @@ pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
 
             if let Some(doi_str) = doi {
                 // Single DOI download
-                if global.verbose {
-                    eprintln!("Downloading DOI: {}", doi_str);
-                }
+
+                reporter.status("Downloading", &format!("DOI: {}", doi_str));
 
                 let result = downloader
                     .download_by_doi(&doi_str)
@@ -104,17 +106,20 @@ pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
                 if global.json {
                     output::print_json(&result)?;
                 } else {
-                    eprintln!("Downloaded: {}", result.file_path.display());
-                    eprintln!("SHA256: {}", result.sha256);
-                    eprintln!("Size: {} bytes", result.size_bytes);
+                    reporter.finish(&format!(
+                        "{} ({} bytes)",
+                        result.file_path.display(),
+                        result.size_bytes
+                    ));
                 }
             } else if let Some(query_str) = query {
                 // Search + batch download
                 let provider_impl = make_provider(&provider, &config)?;
 
-                if !global.quiet {
-                    eprintln!("Searching {} for {}", provider_impl.name(), query_str);
-                }
+                reporter.status(
+                    "Searching",
+                    &format!("{} for {}", provider_impl.name(), query_str),
+                );
 
                 let search_query = SearchQuery {
                     query: query_str,
@@ -130,51 +135,37 @@ pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
 
                 let paper_count = search_result.papers.len();
                 if paper_count == 0 {
-                    if !global.quiet {
-                        eprintln!("No papers found.");
-                    }
+                    reporter.warn("No papers found.");
                     return Ok(());
                 }
 
-                if !global.quiet {
-                    eprintln!(
-                        "Found {} papers. Downloading (concurrency={})...",
+                reporter.status(
+                    "Found",
+                    &format!(
+                        "{} papers, downloading (concurrency={})...",
                         paper_count, concurrency
-                    );
-                }
+                    ),
+                );
 
-                let quiet = global.quiet;
+                let stage: Arc<dyn hs_style::reporter::StageHandle> =
+                    Arc::from(reporter.begin_stage("Downloading", Some(paper_count as u64)));
+                let stage_ref = Arc::clone(&stage);
                 let progress: Option<paper_fetch_core::services::download::ProgressCallback> =
-                    if quiet {
-                        None
-                    } else {
-                        Some(Box::new(
-                            move |done: usize, total: usize, title: &str, event: &ProgressEvent| {
-                                match event {
-                                    ProgressEvent::Started => {
-                                        eprintln!(
-                                            "[{}/{}] Downloading: {}",
-                                            done + 1,
-                                            total,
-                                            title
-                                        );
-                                    }
-                                    ProgressEvent::Completed(size) => {
-                                        eprintln!(
-                                            "[{}/{}] Done ({} bytes): {}",
-                                            done, total, size, title
-                                        );
-                                    }
-                                    ProgressEvent::Failed(err) => {
-                                        eprintln!(
-                                            "[{}/{}] FAILED: {} -- {}",
-                                            done, total, title, err
-                                        );
-                                    }
+                    Some(Box::new(
+                        move |_done: usize, _total: usize, title: &str, event: &ProgressEvent| {
+                            match event {
+                                ProgressEvent::Started => {
+                                    stage_ref.set_message(title);
                                 }
-                            },
-                        ))
-                    };
+                                ProgressEvent::Completed(_) => {
+                                    stage_ref.inc(1);
+                                }
+                                ProgressEvent::Failed(_) => {
+                                    stage_ref.inc(1);
+                                }
+                            }
+                        },
+                    ));
 
                 let batch_result =
                     download_batch(downloader, search_result.papers, concurrency, progress).await;
@@ -182,16 +173,15 @@ pub async fn run(action: PaperAction, global: &GlobalOpts) -> Result<()> {
                 if global.json {
                     output::print_json(&batch_result)?;
                 } else {
-                    eprintln!(
+                    reporter.finish(&format!(
                         "\nCompleted: {}/{} succeeded, {} failed",
                         batch_result.succeeded.len(),
                         batch_result.total_requested,
                         batch_result.failed.len(),
-                    );
+                    ));
                     if !batch_result.failed.is_empty() {
-                        eprintln!("\nFailed downloads:");
                         for f in &batch_result.failed {
-                            eprintln!("  {} -- {}", f.paper_id, f.error);
+                            reporter.warn(&format!("{} -- {}", f.paper_id, f.error));
                         }
                     }
                 }

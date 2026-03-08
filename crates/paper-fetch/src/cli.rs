@@ -20,21 +20,26 @@ pub struct Cli {
 
 #[derive(Args, Debug, Clone)]
 pub struct GlobalOpts {
+    #[command(flatten)]
+    pub global: hs_style::global_args::GlobalArgs,
+
     /// Out as JSON
     #[arg(long, global = true)]
     pub json: bool,
+}
 
-    /// Verbose output (to stderr)
-    #[arg(short, long, global = true)]
-    pub verbose: bool,
+impl GlobalOpts {
+    pub fn quiet(&self) -> bool {
+        self.global.quiet
+    }
 
-    /// Suppress non-data output
-    #[arg(short, long, global = true)]
-    pub quiet: bool,
-
-    /// Disable colored output
-    #[arg(long, global = true)]
-    pub no_color: bool,
+    pub fn color_str(&self) -> &str {
+        match self.global.color {
+            hs_style::global_args::ColorChoice::Auto => "auto",
+            hs_style::global_args::ColorChoice::Always => "always",
+            hs_style::global_args::ColorChoice::Never => "never",
+        }
+    }
 }
 
 #[derive(Subcommand, Debug)]
