@@ -8,7 +8,7 @@ pub async fn run(action: ConfigAction, global: &GlobalOpts) -> Result<()> {
     match action {
         ConfigAction::Show => {
             let config = Config::load().context("Failed to load config")?;
-            if global.json {
+            if global.is_json() {
                 output::print_json(&config)?;
             } else {
                 let yaml =
@@ -20,7 +20,7 @@ pub async fn run(action: ConfigAction, global: &GlobalOpts) -> Result<()> {
         ConfigAction::Path => {
             match Config::config_path() {
                 Some(path) => {
-                    if global.json {
+                    if global.is_json() {
                         output::print_json(&serde_json::json!({
                             "path": path.display().to_string(),
                             "exists": path.exists(),

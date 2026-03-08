@@ -6,7 +6,7 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 ///   paper-fetch paper search "transformer attention mechanisms"
 ///   paper-fetch paper search --type title "neural networks" -n 5
 ///   paper-fetch paper get --doi "10.48550/arXiv.2301.00001"
-///   paper-fetch paper search "deep learning" --json
+///   paper-fetch paper search "deep learning" --output json
 ///   paper-fetch config show
 #[derive(Parser, Debug)]
 #[command(name = "paper-fetch", version, about, long_about = None)]
@@ -22,15 +22,18 @@ pub struct Cli {
 pub struct GlobalOpts {
     #[command(flatten)]
     pub global: hs_style::global_args::GlobalArgs,
-
-    /// Out as JSON
-    #[arg(long, global = true)]
-    pub json: bool,
 }
 
 impl GlobalOpts {
     pub fn quiet(&self) -> bool {
         self.global.quiet
+    }
+
+    pub fn is_json(&self) -> bool {
+        matches!(
+            self.global.output,
+            hs_style::global_args::OutputFormat::Json
+        )
     }
 
     pub fn color_str(&self) -> &str {

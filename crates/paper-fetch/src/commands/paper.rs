@@ -44,7 +44,7 @@ pub async fn run(
                 .await
                 .context("Search failed")?;
 
-            if global.json {
+            if global.is_json() {
                 output::print_json(&result)?;
             } else {
                 output::print_search_result(&result, styles);
@@ -65,7 +65,7 @@ pub async fn run(
 
             match paper {
                 Some(p) => {
-                    if global.json {
+                    if global.is_json() {
                         output::print_json(&p)?;
                     } else {
                         output::print_paper(&p, styles);
@@ -103,7 +103,7 @@ pub async fn run(
                     .await
                     .context("Download failed")?;
 
-                if global.json {
+                if global.is_json() {
                     output::print_json(&result)?;
                 } else {
                     reporter.finish(&format!(
@@ -166,7 +166,7 @@ pub async fn run(
                 let batch_result =
                     download_batch(downloader, search_result.papers, concurrency, progress).await;
 
-                if global.json {
+                if global.is_json() {
                     output::print_json(&batch_result)?;
                 } else {
                     reporter.finish(&format!(
