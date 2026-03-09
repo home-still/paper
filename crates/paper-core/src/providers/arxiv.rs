@@ -120,8 +120,8 @@ impl ArxivProvider {
     }
 
     fn parse_atom_feed(&self, xml: &str) -> Result<(Vec<Paper>, usize), PaperError> {
-        let doc = roxmltree::Document::parse(xml)
-            .map_err(|e| PaperError::ParseError(e.to_string()))?;
+        let doc =
+            roxmltree::Document::parse(xml).map_err(|e| PaperError::ParseError(e.to_string()))?;
 
         let root = doc.root_element();
         let ns = "http://www.w3.org/2005/Atom";

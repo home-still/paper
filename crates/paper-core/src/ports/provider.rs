@@ -14,10 +14,7 @@ pub trait PaperProvider: Send + Sync {
         100
     }
 
-    async fn get_by_doi(
-        &self,
-        _doi: &str,
-    ) -> Result<Option<crate::models::Paper>, PaperError> {
+    async fn get_by_doi(&self, _doi: &str) -> Result<Option<crate::models::Paper>, PaperError> {
         Ok(None)
     }
 
