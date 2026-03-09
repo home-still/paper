@@ -81,7 +81,6 @@ fn main() -> ExitCode {
                     provider,
                     &cli.global,
                     &reporter,
-                    &styles,
                 )
                 .await
             }

@@ -15,6 +15,7 @@ use paper_core::services::download::{download_batch, DownloadEvent, OnProgress};
 use crate::cli::{GlobalOpts, ProviderArg, SearchTypeArg};
 use crate::output;
 
+#[allow(clippy::too_many_arguments)]
 pub async fn run_search(
     query: String,
     search_type: SearchTypeArg,
@@ -90,6 +91,7 @@ pub async fn run_get(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn run_download(
     query: Option<String>,
     doi: Option<String>,
@@ -99,7 +101,6 @@ pub async fn run_download(
     provider: ProviderArg,
     global: &GlobalOpts,
     reporter: &Arc<dyn Reporter>,
-    styles: &Styles,
 ) -> Result<()> {
     let config = Config::load().context("Failed to load config")?;
 
