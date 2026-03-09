@@ -43,14 +43,14 @@ impl DateFilter {
         let mut before = None;
 
         for token in input.split_whitespace() {
-            let (op, date_str) = if token.starts_with(">=") {
-                (">=", &token[2..])
-            } else if token.starts_with("<=") {
-                ("<=", &token[2..])
-            } else if token.starts_with('>') {
-                (">", &token[1..])
-            } else if token.starts_with('<') {
-                ("<", &token[1..])
+            let (op, date_str) = if let Some(rest) = token.strip_prefix(">=") {
+                (">=", rest)
+            } else if let Some(rest) = token.strip_prefix("<=") {
+                ("<=", rest)
+            } else if let Some(rest) = token.strip_prefix('>') {
+                (">", rest)
+            } else if let Some(rest) = token.strip_prefix('<') {
+                ("<", rest)
             } else {
                 return Err(format!(
                     "expected '>', '>=', '<', or '<=' prefix, got: {}",

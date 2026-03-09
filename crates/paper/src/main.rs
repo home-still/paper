@@ -74,6 +74,7 @@ fn main() -> ExitCode {
                 search_type,
                 provider,
                 date,
+                show_abstract: _,
             } => {
                 commands::paper::run_download(
                     query,

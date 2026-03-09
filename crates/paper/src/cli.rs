@@ -102,6 +102,10 @@ pub enum NounCmd {
         #[arg(short = 'd', long = "date")]
         date: Option<String>,
 
+        /// Show abstracts in search results
+        #[arg(short = 'a', long = "abstract")]
+        show_abstract: bool,
+
         /// Download a single paper by DOI
         #[arg(long, conflicts_with = "query")]
         doi: Option<String>,
