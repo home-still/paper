@@ -34,7 +34,13 @@ impl ArxivProvider {
             _ => "all:",
         };
 
-        let search_query = format!("{}\"{}\"", search_prefix, query.query);
+        let search_query = query
+            .query
+            .split_whitespace()
+            .map(|term| format!("{}{}", search_prefix, term))
+            .collect::<Vec<_>>()
+            .join(" AND ");
+
         let search_query = if let Some(ref df) = query.date_filter {
             let from = df
                 .after
@@ -58,6 +64,8 @@ impl ArxivProvider {
                 ("search_query", search_query.as_str()),
                 ("start", &query.offset.to_string()),
                 ("max_results", &query.max_results.to_string()),
+                ("sortBy", "relevance"),
+                ("sortOrder", "descending"),
             ],
         )
         .map_err(|e| PaperError::InvalidInput(e.to_string()))?;

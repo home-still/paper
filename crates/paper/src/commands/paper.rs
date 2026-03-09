@@ -38,9 +38,21 @@ pub async fn run_search(
         .transpose()
         .map_err(|e| anyhow::anyhow!("Invalid date filter: {}", e))?;
 
+    if looks_like_doi(&query) {
+        return lookup_and_display(&query, "DOI", &*provider, stage, global, reporter, styles)
+            .await;
+    } else if looks_like_arxiv_id(&query) {
+        return lookup_and_display(
+            &query, "arXiv ID", &*provider, stage, global, reporter, styles,
+        )
+        .await;
+    };
+
+    let search_type: paper_core::models::SearchType = search_type.into();
+
     let search_query = SearchQuery {
         query,
-        search_type: search_type.into(),
+        search_type,
         max_results: max_results as usize,
         offset,
         date_filter,
@@ -265,4 +277,52 @@ fn format_bytes(bytes: u64) -> String {
     } else {
         format!("{} B", bytes)
     }
+}
+
+async fn lookup_and_display(
+    query: &str,
+    label: &str,
+    provider: &dyn PaperProvider,
+    stage: Box<dyn hs_style::reporter::StageHandle>,
+    global: &GlobalOpts,
+    reporter: &Arc<dyn Reporter>,
+    styles: &Styles,
+) -> Result<()> {
+    let paper = provider
+        .get_by_doi(query)
+        .await
+        .context(format!("{} lookup failed", label))?;
+
+    stage.finish_and_clear();
+
+    match paper {
+        Some(p) => {
+            if global.is_json() {
+                output::print_json(&p)?;
+            } else {
+                output::print_paper(&p, styles);
+            }
+        }
+        None => {
+            reporter.warn(&format!("No paper found for {}: {}", label, query));
+        }
+    }
+    Ok(())
+}
+
+/// DOI format: starts with "10." followed by a registrant code and a slash
+/// e.g., "10.1038/s41576-024-00001-2"
+fn looks_like_doi(query: &str) -> bool {
+    query.starts_with("10.") && query.contains('/')
+}
+
+/// arXiv ID format: digits, a dot, then more digits
+/// e.g., "2408.13479" or "2408.13479v5"
+fn looks_like_arxiv_id(query: &str) -> bool {
+    let stripped = query.split('v').next().unwrap_or(query);
+    let parts: Vec<&str> = stripped.splitn(2, '.').collect();
+    parts.len() == 2
+        && parts[0].len() == 4
+        && parts[0].chars().all(|c| c.is_ascii_digit())
+        && parts[1].chars().all(|c| c.is_ascii_digit())
 }
