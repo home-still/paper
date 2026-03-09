@@ -48,9 +48,11 @@ fn main() -> ExitCode {
                 max_results,
                 offset,
                 provider,
+                date,
             } => {
                 commands::paper::run_search(
                     query,
+                    date,
                     search_type,
                     max_results,
                     offset,
@@ -71,9 +73,11 @@ fn main() -> ExitCode {
                 concurrency,
                 search_type,
                 provider,
+                date,
             } => {
                 commands::paper::run_download(
                     query,
+                    date,
                     doi,
                     max_results,
                     concurrency,

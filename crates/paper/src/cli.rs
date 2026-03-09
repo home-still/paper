@@ -60,6 +60,10 @@ pub enum NounCmd {
         #[arg(short = 't', long = "type", default_value = "keywords")]
         search_type: SearchTypeArg,
 
+        /// Filter by date range (e.g., ">=2025", ">2023 <2025", ">=2024-06")
+        #[arg(short = 'd', long = "date")]
+        date: Option<String>,
+
         /// Maximum number of results (1-100)
         #[arg(short = 'n', long, default_value = "10", value_parser = clap::value_parser!(u16).range(1..=100))]
         max_results: u16,
@@ -93,6 +97,10 @@ pub enum NounCmd {
     Download {
         /// Search query (downloads matching papers)
         query: Option<String>,
+
+        /// Filter by date range (e.g., ">=2025", ">2023 <2025", ">=2024-06")
+        #[arg(short = 'd', long = "date")]
+        date: Option<String>,
 
         /// Download a single paper by DOI
         #[arg(long, conflicts_with = "query")]

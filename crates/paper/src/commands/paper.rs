@@ -18,6 +18,7 @@ use crate::output;
 #[allow(clippy::too_many_arguments)]
 pub async fn run_search(
     query: String,
+    date: Option<String>,
     search_type: SearchTypeArg,
     max_results: u16,
     offset: usize,
@@ -32,11 +33,17 @@ pub async fn run_search(
     let stage = reporter.begin_stage("Searching", None);
     stage.set_message(&format!("{} for:{}", provider.name(), query));
 
+    let date_filter = date
+        .map(|d| paper_core::models::DateFilter::parse(&d))
+        .transpose()
+        .map_err(|e| anyhow::anyhow!("Invalid date filter: {}", e))?;
+
     let search_query = SearchQuery {
         query,
         search_type: search_type.into(),
         max_results: max_results as usize,
         offset,
+        date_filter,
     };
 
     let result = provider
@@ -94,6 +101,7 @@ pub async fn run_get(
 #[allow(clippy::too_many_arguments)]
 pub async fn run_download(
     query: Option<String>,
+    date: Option<String>,
     doi: Option<String>,
     max_results: u16,
     concurrency: usize,
@@ -134,11 +142,17 @@ pub async fn run_download(
         let search_stage = reporter.begin_stage("Searching", None);
         search_stage.set_message(&format!("{} for {}", provider_impl.name(), query_str));
 
+        let date_filter = date
+            .map(|d| paper_core::models::DateFilter::parse(&d))
+            .transpose()
+            .map_err(|e| anyhow::anyhow!("Invalid date filter: {}", e))?;
+
         let search_query = SearchQuery {
             query: query_str,
             search_type: search_type.into(),
             max_results: max_results as usize,
             offset: 0,
+            date_filter,
         };
 
         let search_result = provider_impl

@@ -35,6 +35,22 @@ impl ArxivProvider {
         };
 
         let search_query = format!("{}\"{}\"", search_prefix, query.query);
+        let search_query = if let Some(ref df) = query.date_filter {
+            let from = df
+                .after
+                .map(|d| format!("{}000000", d.format("%Y%m%d")))
+                .unwrap_or_else(|| "000001010000".to_string());
+            let to = df
+                .before
+                .map(|d| {
+                    let day_before = d - chrono::Duration::days(1);
+                    format!("{}235959", day_before.format("%Y%m%d"))
+                })
+                .unwrap_or_else(|| "999912312359".to_string());
+            format!("{} AND submittedDate:[{} TO {}]", search_query, from, to)
+        } else {
+            search_query
+        };
 
         let url = url::Url::parse_with_params(
             &self.base_url,
@@ -187,6 +203,7 @@ impl PaperProvider for ArxivProvider {
             search_type: SearchType::DOI,
             max_results: 1,
             offset: 0,
+            date_filter: None,
         };
 
         let result = self.search(&query).await?;
@@ -212,6 +229,7 @@ mod tests {
             search_type: SearchType::Title,
             max_results: 10,
             offset: 0,
+            date_filter: None,
         };
         let url = p.build_query_url(&query).expect("Failed to build URL");
         assert!(url.contains("search_query=ti%3A"));
