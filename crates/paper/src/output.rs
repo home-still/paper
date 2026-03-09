@@ -13,7 +13,7 @@ pub fn print_json(value: &impl Serialize) -> Result<()> {
 }
 
 /// Print search results as a human-readable list.
-pub fn print_search_result(result: &SearchResult, styles: &Styles) {
+pub fn print_search_result(result: &SearchResult, styles: &Styles, show_abstract: bool) {
     eprintln!(
         "Found {} results from {} (showing {})\n",
         result.total_results,
@@ -22,7 +22,7 @@ pub fn print_search_result(result: &SearchResult, styles: &Styles) {
     );
 
     for (i, paper) in result.papers.iter().enumerate() {
-        print_paper_row(i + 1, paper, styles);
+        print_paper_row(i + 1, paper, styles, show_abstract);
     }
 
     if let Some(offset) = result.next_offset {
@@ -35,7 +35,7 @@ pub fn print_search_result(result: &SearchResult, styles: &Styles) {
     }
 }
 
-fn print_paper_row(index: usize, paper: &Paper, styles: &Styles) {
+fn print_paper_row(index: usize, paper: &Paper, styles: &Styles, show_abstract: bool) {
     let authors = paper
         .authors
         .iter()
@@ -59,6 +59,11 @@ fn print_paper_row(index: usize, paper: &Paper, styles: &Styles) {
         println!("   {}", url.style(styles.url));
     }
     println!();
+    if show_abstract {
+        if let Some(abs) = &paper.abstract_text {
+            println!("   {}", abs);
+        }
+    }
 }
 
 /// Print a single paper in human-readable format.

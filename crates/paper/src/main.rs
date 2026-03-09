@@ -49,6 +49,7 @@ fn main() -> ExitCode {
                 offset,
                 provider,
                 date,
+                show_abstract,
             } => {
                 commands::paper::run_search(
                     query,
@@ -57,6 +58,7 @@ fn main() -> ExitCode {
                     max_results,
                     offset,
                     provider,
+                    show_abstract,
                     &cli.global,
                     &reporter,
                     &styles,
@@ -74,7 +76,6 @@ fn main() -> ExitCode {
                 search_type,
                 provider,
                 date,
-                show_abstract: _,
             } => {
                 commands::paper::run_download(
                     query,

@@ -23,6 +23,7 @@ pub async fn run_search(
     max_results: u16,
     offset: usize,
     provider: ProviderArg,
+    show_abstract: bool,
     global: &GlobalOpts,
     reporter: &Arc<dyn Reporter>,
     styles: &Styles,
@@ -68,7 +69,7 @@ pub async fn run_search(
     if global.is_json() {
         output::print_json(&result)?;
     } else {
-        output::print_search_result(&result, styles);
+        output::print_search_result(&result, styles, show_abstract);
     }
 
     Ok(())

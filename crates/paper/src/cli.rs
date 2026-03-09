@@ -60,6 +60,10 @@ pub enum NounCmd {
         #[arg(short = 't', long = "type", default_value = "keywords")]
         search_type: SearchTypeArg,
 
+        /// Show abstracts in search results
+        #[arg(short = 'a', long = "abstract")]
+        show_abstract: bool,
+
         /// Filter by date range (e.g., ">=2025", ">2023 <2025", ">=2024-06")
         #[arg(short = 'd', long = "date")]
         date: Option<String>,
@@ -101,10 +105,6 @@ pub enum NounCmd {
         /// Filter by date range (e.g., ">=2025", ">2023 <2025", ">=2024-06")
         #[arg(short = 'd', long = "date")]
         date: Option<String>,
-
-        /// Show abstracts in search results
-        #[arg(short = 'a', long = "abstract")]
-        show_abstract: bool,
 
         /// Download a single paper by DOI
         #[arg(long, conflicts_with = "query")]
