@@ -13,7 +13,12 @@ pub fn print_json(value: &impl Serialize) -> Result<()> {
 }
 
 /// Print search results as a human-readable list.
-pub fn print_search_result(result: &SearchResult, styles: &Styles, show_abstract: bool) {
+pub fn print_search_result(
+    result: &SearchResult,
+    styles: &Styles,
+    show_abstract: bool,
+    query: &str,
+) {
     eprintln!(
         "Found {} results from {} (showing {})\n",
         result.total_results,
@@ -22,7 +27,7 @@ pub fn print_search_result(result: &SearchResult, styles: &Styles, show_abstract
     );
 
     for (i, paper) in result.papers.iter().enumerate() {
-        print_paper_row(i + 1, paper, styles, show_abstract);
+        print_paper_row(i + 1, paper, styles, show_abstract, query);
     }
 
     if let Some(offset) = result.next_offset {
@@ -35,7 +40,7 @@ pub fn print_search_result(result: &SearchResult, styles: &Styles, show_abstract
     }
 }
 
-fn print_paper_row(index: usize, paper: &Paper, styles: &Styles, show_abstract: bool) {
+fn print_paper_row(index: usize, paper: &Paper, styles: &Styles, show_abstract: bool, query: &str) {
     let authors = paper
         .authors
         .iter()
@@ -48,7 +53,11 @@ fn print_paper_row(index: usize, paper: &Paper, styles: &Styles, show_abstract: 
         .map(|d| d.to_string())
         .unwrap_or_default();
 
-    println!("{}. {}", index, paper.title.style(styles.title));
+    println!(
+        "{}. {}",
+        index,
+        highlight_keywords(&paper.title, query, styles)
+    );
     println!("   {} ({})", authors, date.style(styles.date));
     print!("   {}", paper.id);
     if let Some(doi) = &paper.doi {
@@ -98,4 +107,19 @@ pub fn print_paper(paper: &Paper, styles: &Styles) {
     if let Some(abs) = &paper.abstract_text {
         println!("\n{}", abs);
     }
+}
+
+fn highlight_keywords(text: &str, query: &str, styles: &Styles) -> String {
+    let keywords: Vec<String> = query.split_whitespace().map(|w| w.to_lowercase()).collect();
+    text.split_whitespace()
+        .map(|word| {
+            let lower = word.to_lowercase();
+            if keywords.iter().any(|kw| lower.contains(kw)) {
+                format!("{}", word.style(styles.highlight))
+            } else {
+                format!("{}", word.style(styles.title))
+            }
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
 }
