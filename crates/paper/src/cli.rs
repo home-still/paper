@@ -3,10 +3,10 @@ use clap::{Args, Parser, Subcommand, ValueEnum};
 /// paper — meta-search tool for academic papers
 ///
 /// Examples:
-///   paper paper search "transformer attention mechanisms"
-///   paper paper search --type title "neural networks" -n 5
-///   paper paper get --doi "10.48550/arXiv.2301.00001"
-///   paper paper search "deep learning" --output json
+///   paper search "transformer attention mechanisms"
+///   paper search --type title "neural networks" -n 5
+///   paper get --doi "10.48550/arXiv.2301.00001"
+///   paper search "deep learning" --output json
 ///   paper config show
 #[derive(Parser, Debug)]
 #[command(name = "paper", version, about, long_about = None)]
@@ -47,25 +47,11 @@ impl GlobalOpts {
 
 #[derive(Subcommand, Debug)]
 pub enum NounCmd {
-    /// Search and retrieve academic papers
-    Paper {
-        #[command(subcommand)]
-        action: PaperAction,
-    },
-    /// View and manage configuration
-    Config {
-        #[command(subcommand)]
-        action: ConfigAction,
-    },
-}
-
-#[derive(Subcommand, Debug)]
-pub enum PaperAction {
     /// Search for papers across providers
     ///
     /// Examples:
-    ///   paper paper search "transformer attention"
-    ///   paper paper search --type author "Hinton" -n 5
+    ///   paper search "transformer attention"
+    ///   paper search --type author "Hinton" -n 5
     Search {
         /// Search query string
         query: String,
@@ -89,7 +75,7 @@ pub enum PaperAction {
     /// Get a single paper by DOI
     ///
     /// Examples:
-    ///   paper paper get --doi "10.48550/arXiv.2301.00001"
+    ///   paper get --doi "10.48550/arXiv.2301.00001"
     Get {
         /// DOI to look up
         #[arg(long)]
@@ -102,8 +88,8 @@ pub enum PaperAction {
     /// Download papers (search + download, or single DOI)
     ///
     /// Examples:
-    ///   paper paper download "neural nets" -n 25
-    ///   paper paper download --doi "10.48550/arXiv.2301.00001"
+    ///   paper download "neural nets" -n 25
+    ///   paper download --doi "10.48550/arXiv.2301.00001"
     Download {
         /// Search query (downloads matching papers)
         query: Option<String>,
@@ -127,6 +113,11 @@ pub enum PaperAction {
         /// Provider to search
         #[arg(short, long, default_value = "arxiv")]
         provider: ProviderArg,
+    },
+    /// View and manage configuration
+    Config {
+        #[command(subcommand)]
+        action: ConfigAction,
     },
 }
 

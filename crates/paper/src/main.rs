@@ -42,8 +42,48 @@ fn main() -> ExitCode {
 
     let result = rt.block_on(async {
         match cli.command {
-            NounCmd::Paper { action } => {
-                commands::paper::run(action, &cli.global, &reporter, &styles).await
+            NounCmd::Search {
+                query,
+                search_type,
+                max_results,
+                offset,
+                provider,
+            } => {
+                commands::paper::run_search(
+                    query,
+                    search_type,
+                    max_results,
+                    offset,
+                    provider,
+                    &cli.global,
+                    &reporter,
+                    &styles,
+                )
+                .await
+            }
+            NounCmd::Get { doi, provider } => {
+                commands::paper::run_get(doi, provider, &cli.global, &reporter, &styles).await
+            }
+            NounCmd::Download {
+                query,
+                doi,
+                max_results,
+                concurrency,
+                search_type,
+                provider,
+            } => {
+                commands::paper::run_download(
+                    query,
+                    doi,
+                    max_results,
+                    concurrency,
+                    search_type,
+                    provider,
+                    &cli.global,
+                    &reporter,
+                    &styles,
+                )
+                .await
             }
             NounCmd::Config { action } => commands::config::run(action, &cli.global).await,
         }
