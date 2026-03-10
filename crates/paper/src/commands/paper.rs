@@ -76,7 +76,13 @@ pub async fn run_search(
     if global.is_json() {
         output::print_json(&result)?;
     } else {
-        output::print_search_result(&result, styles, show_abstract, &search_query.query);
+        output::print_search_result(
+            &result,
+            styles,
+            show_abstract,
+            &search_query.query,
+            search_query.offset,
+        );
     }
 
     Ok(())

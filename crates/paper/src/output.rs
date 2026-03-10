@@ -18,6 +18,7 @@ pub fn print_search_result(
     styles: &Styles,
     show_abstract: bool,
     query: &str,
+    offset: usize,
 ) {
     eprintln!(
         "Found {} results from {} (showing {})\n",
@@ -27,7 +28,7 @@ pub fn print_search_result(
     );
 
     for (i, paper) in result.papers.iter().enumerate() {
-        print_paper_row(i + 1, paper, styles, show_abstract, query);
+        print_paper_row(i + offset + 1, paper, styles, show_abstract, query);
     }
 
     if let Some(offset) = result.next_offset {
