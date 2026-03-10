@@ -79,6 +79,7 @@ impl Config {
 pub struct ArxivConfig {
     pub base_url: String,
     pub timeout_secs: u64,
+    pub rate_limit_interval_ms: u64,
 }
 
 impl Default for ArxivConfig {
@@ -86,6 +87,7 @@ impl Default for ArxivConfig {
         Self {
             base_url: String::from("http://export.arxiv.org/api/query"),
             timeout_secs: 30,
+            rate_limit_interval_ms: 3000,
         }
     }
 }

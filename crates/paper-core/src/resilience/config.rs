@@ -4,9 +4,6 @@ use std::time::Duration;
 /// Configuration for resilience patterns
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResilienceConfig {
-    /// Requests per second for rate limiting
-    pub rate_limit_rps: u32,
-
     /// Circuit breaker: initial backoff duration
     pub cb_initial_backoff_secs: u64,
 
@@ -25,6 +22,7 @@ pub struct ResilienceConfig {
     /// Retry: maximum backoff u64
     pub retry_max_backoff_secs: u64,
 }
+
 impl ResilienceConfig {
     pub fn cb_initial_backoff(&self) -> Duration {
         Duration::from_secs(self.cb_initial_backoff_secs)
@@ -39,10 +37,10 @@ impl ResilienceConfig {
         Duration::from_millis(self.retry_min_backoff_ms)
     }
 }
+
 impl Default for ResilienceConfig {
     fn default() -> Self {
         Self {
-            rate_limit_rps: 1,
             cb_initial_backoff_secs: 10_u64,
             cb_max_backoff_secs: 60_u64,
             cb_failure_threshold: 3,

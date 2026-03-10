@@ -187,7 +187,12 @@ impl PaperProvider for ArxivProvider {
 
         let response = self.client.get(&url).send().await?;
 
-        if !response.status().is_success() {
+        if response.status() == reqwest::StatusCode::SERVICE_UNAVAILABLE {
+            return Err(PaperError::RateLimited {
+                provider: String::from("arxiv"),
+                retry_after: None,
+            });
+        } else if !response.status().is_success() {
             return Err(PaperError::ProviderUnavailable(format!(
                 "arXiv returned {}",
                 response.status()

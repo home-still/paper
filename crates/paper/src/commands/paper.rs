@@ -10,7 +10,10 @@ use paper_core::models::SearchQuery;
 use paper_core::ports::provider::PaperProvider;
 use paper_core::providers::arxiv::ArxivProvider;
 use paper_core::providers::downloader::PaperDownloader;
+use paper_core::providers::resilient::ResilientProvider;
+use paper_core::resilience::circuit_breaker::new_circuit_breaker;
 use paper_core::services::download::{download_batch, DownloadEvent, OnProgress};
+use std::time::Duration;
 
 use crate::cli::{GlobalOpts, ProviderArg, SearchTypeArg};
 use crate::output;
@@ -263,9 +266,14 @@ pub async fn run_download(
 fn make_provider(provider: &ProviderArg, config: &Config) -> Result<Box<dyn PaperProvider>> {
     match provider {
         ProviderArg::Arxiv => {
-            let p = ArxivProvider::new(&config.providers.arxiv)
+            let inner = ArxivProvider::new(&config.providers.arxiv)
                 .context("Failed to create arXiv provider")?;
-            Ok(Box::new(p))
+            let interval = Duration::from_millis(config.providers.arxiv.rate_limit_interval_ms);
+            let cb = new_circuit_breaker(&config.resilience);
+            let resilient =
+                ResilientProvider::new(Box::new(inner), interval, cb, config.resilience.clone());
+
+            Ok(Box::new(resilient))
         }
     }
 }

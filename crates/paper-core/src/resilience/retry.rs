@@ -22,6 +22,11 @@ where
 
     operation
         .retry(backoff)
-        .when(|err| matches!(err.category(), ErrorCategory::Transient))
+        .when(|err| {
+            matches!(
+                err.category(),
+                ErrorCategory::Transient | ErrorCategory::RateLimited
+            )
+        })
         .await
 }

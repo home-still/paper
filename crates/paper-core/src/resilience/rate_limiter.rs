@@ -1,37 +1,23 @@
-use super::config::ResilienceConfig;
 use governor::{DefaultDirectRateLimiter, Quota, RateLimiter};
-use std::collections::HashMap;
 use std::num::NonZeroU32;
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use std::time::Duration;
 
 pub struct ProviderRateLimiter {
-    limiters: Arc<RwLock<HashMap<String, Arc<DefaultDirectRateLimiter>>>>,
-    default_quota: Quota,
+    limiter: DefaultDirectRateLimiter,
 }
 
 impl ProviderRateLimiter {
-    pub fn new(config: &ResilienceConfig) -> Result<Self, crate::error::PaperError> {
-        let quota = NonZeroU32::new(config.rate_limit_rps)
-            .ok_or_else(|| {
-                crate::error::PaperError::InvalidInput(String::from(
-                    "requests_per_second must be greater than 0",
-                ))
-            })
-            .map(Quota::per_second)?;
+    pub fn new(interval: Duration) -> Self {
+        let quota = Quota::with_period(interval)
+            .expect("interval must be non-zero")
+            .allow_burst(NonZeroU32::new(1).unwrap());
 
-        Ok(Self {
-            limiters: Arc::new(RwLock::new(HashMap::new())),
-            default_quota: quota,
-        })
+        Self {
+            limiter: RateLimiter::direct(quota),
+        }
     }
 
-    pub async fn acquire(&self, provider: &str) {
-        let mut limiters = self.limiters.write().await;
-        let limiter = limiters
-            .entry(String::from(provider))
-            .or_insert_with(|| Arc::new(RateLimiter::direct(self.default_quota)));
-
-        limiter.until_ready().await;
+    pub async fn acquire(&self) {
+        self.limiter.until_ready().await;
     }
 }
