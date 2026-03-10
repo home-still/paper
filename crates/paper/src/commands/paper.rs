@@ -7,6 +7,7 @@ use hs_style::reporter::Reporter;
 use hs_style::styles::Styles;
 use paper_core::config::Config;
 use paper_core::models::SearchQuery;
+use paper_core::models::SortBy;
 use paper_core::ports::provider::PaperProvider;
 use paper_core::providers::arxiv::ArxivProvider;
 use paper_core::providers::downloader::PaperDownloader;
@@ -15,6 +16,7 @@ use paper_core::resilience::circuit_breaker::new_circuit_breaker;
 use paper_core::services::download::{download_batch, DownloadEvent, OnProgress};
 use std::time::Duration;
 
+use crate::cli::SortByArg;
 use crate::cli::{GlobalOpts, ProviderArg, SearchTypeArg};
 use crate::output;
 
@@ -23,6 +25,7 @@ pub async fn run_search(
     query: String,
     date: Option<String>,
     search_type: SearchTypeArg,
+    sort_by: SortByArg,
     max_results: u16,
     offset: usize,
     provider: ProviderArg,
@@ -60,6 +63,7 @@ pub async fn run_search(
         max_results: max_results as usize,
         offset,
         date_filter,
+        sort_by: sort_by.into(),
     };
 
     let result = provider
@@ -169,6 +173,7 @@ pub async fn run_download(
             max_results: max_results as usize,
             offset: 0,
             date_filter,
+            sort_by: SortBy::default(),
         };
 
         let search_result = provider_impl

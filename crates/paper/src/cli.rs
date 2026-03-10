@@ -79,6 +79,10 @@ pub enum NounCmd {
         /// Provider to search
         #[arg(short, long, default_value = "arxiv")]
         provider: ProviderArg,
+
+        /// Sort result by: relevance (default), date, citations
+        #[arg(short = 's', long = "sort", default_value = "relevance")]
+        sort_by: SortByArg,
     },
     /// Get a single paper by DOI
     ///
@@ -151,6 +155,15 @@ pub enum SearchTypeArg {
     Subject,
 }
 
+#[derive(ValueEnum, Clone, Debug, Default)]
+#[value(rename_all = "lowercase")]
+pub enum SortByArg {
+    #[default]
+    Relevance,
+    Date,
+    Citations,
+}
+
 #[derive(ValueEnum, Clone, Debug)]
 #[value(rename_all = "lowercase")]
 pub enum ProviderArg {
@@ -165,6 +178,16 @@ impl From<SearchTypeArg> for paper_core::models::SearchType {
             SearchTypeArg::Author => Self::Author,
             SearchTypeArg::Doi => Self::DOI,
             SearchTypeArg::Subject => Self::Subject,
+        }
+    }
+}
+
+impl From<SortByArg> for paper_core::models::SortBy {
+    fn from(arg: SortByArg) -> Self {
+        match arg {
+            SortByArg::Relevance => Self::Relevance,
+            SortByArg::Date => Self::Date,
+            SortByArg::Citations => Self::Citations,
         }
     }
 }

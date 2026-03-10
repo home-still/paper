@@ -30,6 +30,14 @@ pub enum SearchType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub enum SortBy {
+    #[default]
+    Relevance,
+    Date,
+    Citations,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct DateFilter {
     /// Inclusive lower bound (first date to include)
     pub after: Option<NaiveDate>,
@@ -155,6 +163,7 @@ pub struct SearchQuery {
     pub max_results: usize,
     pub offset: usize,
     pub date_filter: Option<DateFilter>,
+    pub sort_by: SortBy,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

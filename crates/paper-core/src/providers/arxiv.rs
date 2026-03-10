@@ -5,7 +5,7 @@ use roxmltree;
 
 use crate::config::ArxivConfig;
 use crate::error::PaperError;
-use crate::models::{Paper, SearchQuery, SearchResult, SearchType};
+use crate::models::{Paper, SearchQuery, SearchResult, SearchType, SortBy};
 use crate::ports::provider::PaperProvider;
 
 pub struct ArxivProvider {
@@ -58,14 +58,19 @@ impl ArxivProvider {
             search_query
         };
 
+        let (sort_by, sort_order) = match query.sort_by {
+            SortBy::Relevance | SortBy::Citations => ("relevance", "descending"),
+            SortBy::Date => ("submittedDate", "descending"),
+        };
+
         let url = url::Url::parse_with_params(
             &self.base_url,
             &[
                 ("search_query", search_query.as_str()),
                 ("start", &query.offset.to_string()),
                 ("max_results", &query.max_results.to_string()),
-                ("sortBy", "relevance"),
-                ("sortOrder", "descending"),
+                ("sortBy", sort_by),
+                ("sortOrder", sort_order),
             ],
         )
         .map_err(|e| PaperError::InvalidInput(e.to_string()))?;
@@ -217,6 +222,7 @@ impl PaperProvider for ArxivProvider {
             max_results: 1,
             offset: 0,
             date_filter: None,
+            sort_by: SortBy::default(),
         };
 
         let result = self.search(&query).await?;
@@ -243,6 +249,7 @@ mod tests {
             max_results: 10,
             offset: 0,
             date_filter: None,
+            sort_by: SortBy::default(),
         };
         let url = p.build_query_url(&query).expect("Failed to build URL");
         assert!(url.contains("search_query=ti%3A"));

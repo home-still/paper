@@ -50,11 +50,13 @@ fn main() -> ExitCode {
                 provider,
                 date,
                 show_abstract,
+                sort_by,
             } => {
                 commands::paper::run_search(
                     query,
                     date,
                     search_type,
+                    sort_by,
                     max_results,
                     offset,
                     provider,
