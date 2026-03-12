@@ -77,7 +77,7 @@ pub enum NounCmd {
         offset: usize,
 
         /// Provider to search
-        #[arg(short, long, default_value = "arxiv")]
+        #[arg(short, long, default_value = "all")]
         provider: ProviderArg,
 
         /// Sort result by: relevance (default), date, citations
@@ -167,7 +167,9 @@ pub enum SortByArg {
 #[derive(ValueEnum, Clone, Debug)]
 #[value(rename_all = "lowercase")]
 pub enum ProviderArg {
+    All,
     Arxiv,
+    OpenAlex,
 }
 
 impl From<SearchTypeArg> for paper_core::models::SearchType {

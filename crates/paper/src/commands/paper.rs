@@ -11,6 +11,7 @@ use paper_core::models::SortBy;
 use paper_core::ports::provider::PaperProvider;
 use paper_core::providers::arxiv::ArxivProvider;
 use paper_core::providers::downloader::PaperDownloader;
+use paper_core::providers::openalex::OpenAlexProvider;
 use paper_core::providers::resilient::ResilientProvider;
 use paper_core::resilience::circuit_breaker::new_circuit_breaker;
 use paper_core::services::download::{download_batch, DownloadEvent, OnProgress};
@@ -284,6 +285,25 @@ fn make_provider(provider: &ProviderArg, config: &Config) -> Result<Box<dyn Pape
             let resilient =
                 ResilientProvider::new(Box::new(inner), interval, cb, config.resilience.clone());
 
+            Ok(Box::new(resilient))
+        }
+        ProviderArg::OpenAlex => {
+            let inner = OpenAlexProvider::new(&config.providers.openalex)
+                .context("Failed to create OpenAlex provider")?;
+            let interval = Duration::from_millis(config.providers.openalex.rate_limit_interval_ms);
+            let cb = new_circuit_breaker(&config.resilience);
+            let resilient =
+                ResilientProvider::new(Box::new(inner), interval, cb, config.resilience.clone());
+            Ok(Box::new(resilient))
+        }
+        ProviderArg::All => {
+            // TODO: wire AggregationSearchService in chunk 7
+            let inner = OpenAlexProvider::new(&config.providers.openalex)
+                .context("Failed to create OpenAlex provider")?;
+            let interval = Duration::from_millis(config.providers.openalex.rate_limit_interval_ms);
+            let cb = new_circuit_breaker(&config.resilience);
+            let resilient =
+                ResilientProvider::new(Box::new(inner), interval, cb, config.resilience.clone());
             Ok(Box::new(resilient))
         }
     }

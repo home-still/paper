@@ -84,6 +84,7 @@ impl ArxivProvider {
             .find(|n| n.has_tag_name((ns, "id")))
             .and_then(|n| n.text())
             .ok_or_else(|| PaperError::ParseError("Missing ID".into()))?;
+
         // Extract just the arxiv ID from the full URL.
         // e.g., "http://arxiv.org/abs/1234.5678v1" -> "1234.5678v1"
         let short_id = id.rsplit("/").next().unwrap_or(id);
@@ -106,7 +107,7 @@ impl ArxivProvider {
                     .and_then(|n| n.text())
                     .map(|name| crate::models::Author {
                         name: name.to_string(),
-                        affiliation: None,
+                        affiliations: vec![],
                     })
             })
             .collect();
@@ -145,6 +146,7 @@ impl ArxivProvider {
             doi,
             download_url,
             source: String::from("arxiv"),
+            cited_by_count: None,
         })
     }
 

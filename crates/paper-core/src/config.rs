@@ -92,9 +92,29 @@ impl Default for ArxivConfig {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OpenAlexConfig {
+    pub base_url: String,
+    pub api_key: Option<String>,
+    pub timeout_secs: u64,
+    pub rate_limit_interval_ms: u64,
+}
+
+impl Default for OpenAlexConfig {
+    fn default() -> Self {
+        Self {
+            base_url: String::from("http://api.openalex.org"),
+            api_key: None,
+            timeout_secs: 30,
+            rate_limit_interval_ms: 100,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ProvidersConfig {
     pub arxiv: ArxivConfig,
+    pub openalex: OpenAlexConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -5,7 +5,7 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Author {
     pub name: String,
-    pub affiliation: Option<String>,
+    pub affiliations: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -17,6 +17,7 @@ pub struct Paper {
     pub publication_date: Option<NaiveDate>,
     pub doi: Option<String>,
     pub download_url: Option<String>,
+    pub cited_by_count: Option<u64>,
     pub source: String,
 }
 
@@ -202,4 +203,45 @@ pub struct DownloadFailure {
     pub paper_id: String,
     pub title: String,
     pub error: String,
+}
+
+// --- Aggregation types
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AggregatedSearchResult {
+    pub papers: Vec<RankedPaper>,
+    pub source_statuses: Vec<SourceStatus>,
+    pub dedup_stats: DedupStats,
+    pub total_results: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RankedPaper {
+    pub paper: Paper,
+    pub contributing_sources: Vec<String>,
+    pub score: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SourceStatus {
+    pub name: String,
+    pub status: SourceState,
+    pub count: usize,
+    pub total_available: usize,
+    pub response_time_ms: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum SourceState {
+    Success,
+    Timeout,
+    Error(String),
+    CircuitOpen,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+pub struct DedupStats {
+    pub total_raw: usize,
+    pub unique: usize,
+    pub doi_matches: usize,
+    pub fuzzy_matches: usize,
 }

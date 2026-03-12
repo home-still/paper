@@ -1,3 +1,4 @@
+pub mod aggregation;
 pub mod config;
 pub mod error;
 pub mod models;
